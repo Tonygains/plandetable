@@ -525,9 +525,16 @@ const BRANCH_SEATS = ['seat-l-1','seat-l-2','seat-l-3','seat-r-1','seat-r-2','se
 let state = loadState();
 
 function loadState() {
-  const saved = localStorage.getItem('plan-de-table-v1');
+  const saved = localStorage.getItem('plan-de-table-v2');
   if (saved) {
-    try { return JSON.parse(saved); } catch(e) {}
+    try {
+      const parsed = JSON.parse(saved);
+      // Vérifie que la version sauvegardée a bien des invités, sinon on régénère
+      const hasGuests = Object.values(parsed.tables || {}).some(t =>
+        Object.values(t.seats || {}).some(s => s.name)
+      );
+      if (hasGuests) return parsed;
+    } catch(e) {}
   }
   return makeDefaultState();
 }
@@ -580,7 +587,7 @@ function makeDefaultState() {
 }
 
 function saveState() {
-  localStorage.setItem('plan-de-table-v1', JSON.stringify(state));
+  localStorage.setItem('plan-de-table-v2', JSON.stringify(state));
 }
 
 // ============================================================
@@ -813,6 +820,7 @@ function exportCSV() {
 function resetAll() {
   if (!confirm('Effacer toutes les données et revenir à la configuration par défaut ?')) return;
   localStorage.removeItem('plan-de-table-v1');
+  localStorage.removeItem('plan-de-table-v2');
   state = makeDefaultState();
   render();
 }

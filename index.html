@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan de Table</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f4ecdb;
+    --paper-2: #ebe1cc;
+    --ink: #2a2118;
+    --ink-soft: #5c4a36;
+    --accent: #8b3a2a;
+    --accent-soft: #c79a4d;
+    --line: #b9a684;
+    --shadow: 0 1px 2px rgba(60,40,20,.08), 0 4px 12px rgba(60,40,20,.06);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'EB Garamond', Georgia, serif;
+    color: var(--ink);
+    background:
+      radial-gradient(ellipse at top, #f8f1e0 0%, var(--paper) 40%, var(--paper-2) 100%);
+    min-height: 100vh;
+    padding: 24px;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(60,40,20,.04) 1px, transparent 0);
+    background-size: 4px 4px;
+    z-index: 0;
+  }
+  header {
+    text-align: center;
+    margin: 12px 0 28px;
+    position: relative;
+    z-index: 1;
+  }
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    letter-spacing: 0.02em;
+    margin: 0 0 6px;
+    font-style: italic;
+  }
+  .subtitle {
+    font-family: 'EB Garamond', serif;
+    color: var(--ink-soft);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+  }
+  .ornament {
+    color: var(--accent);
+    margin: 8px 0;
+    font-size: 1.2rem;
+  }
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 1;
+  }
+  button, .file-label {
+    font-family: 'EB Garamond', serif;
+    font-size: 0.95rem;
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+    box-shadow: var(--shadow);
+  }
+  button:hover, .file-label:hover {
+    background: var(--accent);
+    color: var(--paper);
+    border-color: var(--accent);
+  }
+  button.primary {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  button.primary:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  input[type="file"] { display: none; }
+
+  .layout-area {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    padding: 40px 20px;
+    position: relative;
+    z-index: 1;
+    overflow-x: auto;
+    min-height: 600px;
+  }
+  .u-container {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: auto 1fr;
+    gap: 20px;
+    min-width: 900px;
+    margin: 0 auto;
+    max-width: 1400px;
+  }
+  .top-row {
+    grid-column: 1 / 4;
+    grid-row: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+  .left-branch {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    align-items: flex-end;
+  }
+  .right-branch {
+    grid-column: 3;
+    grid-row: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    align-items: flex-start;
+  }
+  .center-space {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    opacity: 0.4;
+    text-align: center;
+    padding: 40px;
+    border: 1px dashed var(--line);
+    border-radius: 4px;
+    min-height: 200px;
+  }
+
+  .table {
+    background: #faf3e2;
+    border: 1.5px solid var(--ink-soft);
+    border-radius: 4px;
+    padding: 6px;
+    position: relative;
+    box-shadow: 0 2px 6px rgba(60,40,20,.1);
+  }
+  .table-honor {
+    width: 220px;
+    min-height: 100px;
+  }
+  .table-branch {
+    width: 100px;
+    min-height: 220px;
+  }
+  .table-label {
+    position: absolute;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 0.95rem;
+    color: var(--accent);
+    background: var(--paper);
+    padding: 1px 8px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .table-honor .table-label {
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .table-branch .table-label {
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .table-label:hover { background: var(--accent-soft); }
+
+  /* Disposition des places autour des tables */
+  .seats-grid {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    gap: 4px;
+  }
+  /* Table d'honneur (horizontale 220x100) : 3 places dessus, 3 dessous, 1 à chaque bout */
+  .table-honor .seats-grid {
+    grid-template-columns: 30px 1fr 1fr 1fr 30px;
+    grid-template-rows: 1fr 1fr;
+    min-height: 88px;
+  }
+  .table-honor .seat-top-1 { grid-column: 2; grid-row: 1; }
+  .table-honor .seat-top-2 { grid-column: 3; grid-row: 1; }
+  .table-honor .seat-top-3 { grid-column: 4; grid-row: 1; }
+  .table-honor .seat-bot-1 { grid-column: 2; grid-row: 2; }
+  .table-honor .seat-bot-2 { grid-column: 3; grid-row: 2; }
+  .table-honor .seat-bot-3 { grid-column: 4; grid-row: 2; }
+  .table-honor .seat-end-l { grid-column: 1; grid-row: 1 / 3; align-self: center; }
+  .table-honor .seat-end-r { grid-column: 5; grid-row: 1 / 3; align-self: center; }
+
+  /* Tables des branches (verticales 100x220) : 3 places gauche, 3 droite, 1 en haut, 1 en bas */
+  .table-branch .seats-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 30px 1fr 1fr 1fr 30px;
+    min-height: 208px;
+  }
+  .table-branch .seat-l-1 { grid-column: 1; grid-row: 2; }
+  .table-branch .seat-l-2 { grid-column: 1; grid-row: 3; }
+  .table-branch .seat-l-3 { grid-column: 1; grid-row: 4; }
+  .table-branch .seat-r-1 { grid-column: 2; grid-row: 2; }
+  .table-branch .seat-r-2 { grid-column: 2; grid-row: 3; }
+  .table-branch .seat-r-3 { grid-column: 2; grid-row: 4; }
+  .table-branch .seat-end-t { grid-column: 1 / 3; grid-row: 1; justify-self: center; }
+  .table-branch .seat-end-b { grid-column: 1 / 3; grid-row: 5; justify-self: center; }
+
+  .seat {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-family: 'EB Garamond', serif;
+    padding: 3px 4px;
+    text-align: center;
+    cursor: grab;
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.05;
+    word-break: break-word;
+    transition: all 0.15s;
+    color: var(--ink);
+    overflow: hidden;
+  }
+  .seat:hover {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    transform: scale(1.05);
+    z-index: 5;
+  }
+  .seat.empty {
+    color: var(--ink-soft);
+    font-style: italic;
+    opacity: 0.5;
+  }
+  .seat.dragging {
+    opacity: 0.4;
+  }
+  .seat.drag-over {
+    background: var(--accent);
+    color: var(--paper);
+    border-color: var(--accent);
+  }
+
+  /* Petits sièges décoratifs autour des tables */
+  .seat-end-l, .seat-end-r, .seat-end-t, .seat-end-b {
+    background: #f0e5cc;
+  }
+
+  .stats {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 20px;
+    font-style: italic;
+    color: var(--ink-soft);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+  }
+
+  /* Modale d'édition */
+  .modal-bg {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(42, 33, 24, 0.6);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    padding: 30px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  .modal h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    margin-top: 0;
+    color: var(--accent);
+  }
+  .modal label {
+    display: block;
+    margin: 12px 0 4px;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+    letter-spacing: 0.05em;
+  }
+  .modal input, .modal textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    background: #faf3e2;
+    font-family: 'EB Garamond', serif;
+    font-size: 1rem;
+    color: var(--ink);
+  }
+  .modal textarea { min-height: 80px; resize: vertical; }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: flex-end;
+  }
+
+  /* Liste invités */
+  .guests-list {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 20px;
+    margin-top: 24px;
+    box-shadow: var(--shadow);
+    position: relative;
+    z-index: 1;
+  }
+  .guests-list h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    text-align: center;
+    margin-top: 0;
+    color: var(--accent);
+  }
+  .guests-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+  }
+  .guest-card {
+    padding: 8px 12px;
+    background: #faf3e2;
+    border: 1px solid var(--line);
+    font-size: 0.95rem;
+    border-radius: 3px;
+  }
+  .guest-card .table-ref {
+    font-style: italic;
+    color: var(--accent);
+    font-size: 0.8rem;
+    display: block;
+    margin-top: 2px;
+  }
+
+  @media print {
+    body { background: white; padding: 0; }
+    body::before { display: none; }
+    .toolbar, .guests-list { display: none; }
+    .layout-area { box-shadow: none; border: none; }
+    h1 { color: black; }
+  }
+
+  @media (max-width: 700px) {
+    .u-container { min-width: 600px; }
+    .table-honor { width: 180px; }
+    .table-branch { width: 80px; min-height: 180px; }
+    .seat { font-size: 0.6rem; min-height: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="ornament">❦</div>
+  <h1>Plan de Table</h1>
+  <div class="subtitle">Grange Rouge · Martigny</div>
+</header>
+
+<div class="toolbar">
+  <button onclick="exportJSON()">Exporter JSON</button>
+  <label class="file-label" for="import-file">Importer JSON</label>
+  <input type="file" id="import-file" accept=".json" onchange="importJSON(event)">
+  <button onclick="exportCSV()">Exporter CSV</button>
+  <button onclick="window.print()">Imprimer</button>
+  <button class="primary" onclick="resetAll()">Tout effacer</button>
+</div>
+
+<div class="layout-area">
+  <div class="u-container" id="u-container">
+    <div class="top-row" id="top-row"></div>
+    <div class="left-branch" id="left-branch"></div>
+    <div class="center-space">
+      <div>
+        <div style="font-size: 2rem;">❦</div>
+        <div>Espace central</div>
+      </div>
+    </div>
+    <div class="right-branch" id="right-branch"></div>
+  </div>
+  <div class="stats" id="stats"></div>
+</div>
+
+<div class="guests-list">
+  <h2>Liste des invités</h2>
+  <div class="guests-grid" id="guests-grid"></div>
+</div>
+
+<!-- Modale édition place -->
+<div class="modal-bg" id="modal-bg" onclick="if(event.target===this) closeModal()">
+  <div class="modal">
+    <h2 id="modal-title">Modifier la place</h2>
+    <label>Nom de l'invité</label>
+    <input type="text" id="modal-name" placeholder="Prénom Nom">
+    <label>Notes (allergies, régime, etc.)</label>
+    <textarea id="modal-notes" placeholder="Optionnel"></textarea>
+    <div class="modal-actions">
+      <button onclick="closeModal()">Annuler</button>
+      <button class="primary" onclick="saveSeat()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modale édition table -->
+<div class="modal-bg" id="modal-table-bg" onclick="if(event.target===this) closeTableModal()">
+  <div class="modal">
+    <h2>Renommer la table</h2>
+    <label>Nom de la table</label>
+    <input type="text" id="modal-table-name" placeholder="Ex: Famille mariée">
+    <div class="modal-actions">
+      <button onclick="closeTableModal()">Annuler</button>
+      <button class="primary" onclick="saveTableName()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// CONFIGURATION
+// ============================================================
+// 20 tables au total :
+// - Table d'honneur (top du U) : tables 220cm horizontales
+// - Branches gauche/droite : tables 100x220 verticales
+// Réparties par défaut : 4 tables en haut (220cm), 8 à gauche (220cm restantes + 100cm), 8 à droite
+
+// Default config: place les 10 tables 220cm en haut + bouts du U,
+// les 10 tables 200cm sur les côtés. Mais comme demandé : table d'honneur = 220cm.
+// Configuration par défaut :
+//  - Top (table d'honneur) : 4 tables de 220cm côte à côte
+//  - Branche gauche : 3 tables 220cm + 5 tables 200cm = 8 tables verticales
+//  - Branche droite : 3 tables 220cm + 5 tables 200cm = 8 tables verticales
+// Total : 4 + 8 + 8 = 20 tables, 6 places chacune = 120 places
+
+const DEFAULT_CONFIG = {
+  // Top (table d'honneur) : 22, 20, 18 (mariés), 19, 17
+  top: [
+    { id: 'T22', name: 'Table 22', size: '220x100' },
+    { id: 'T20', name: 'Table 20', size: '220x100' },
+    { id: 'T18', name: 'Mariés (T18)', size: '220x100' },
+    { id: 'T19', name: 'Table 19', size: '220x100' },
+    { id: 'T17', name: 'Table 17', size: '220x100' },
+  ],
+  // Branche gauche
+  left: [
+    { id: 'T16', name: 'Table 16', size: '220x100' },
+    { id: 'T15', name: 'Table 15', size: '220x100' },
+    { id: 'T14', name: 'Table 14', size: '200x100' },
+    { id: 'T13', name: 'Table 13', size: '200x100' },
+    { id: 'T12', name: 'Table 12', size: '200x100' },
+    { id: 'T11', name: 'Table 11', size: '200x100' },
+    { id: 'T10', name: 'Table 10', size: '200x100' },
+    { id: 'T9',  name: 'Table 9',  size: '220x100' },
+  ],
+  // Branche droite
+  right: [
+    { id: 'T1',  name: 'Table 1',  size: '220x100' },
+    { id: 'T2',  name: 'Table 2',  size: '220x100' },
+    { id: 'T3',  name: 'Table 3',  size: '200x100' },
+    { id: 'T4',  name: 'Table 4',  size: '200x100' },
+    { id: 'T5',  name: 'Table 5',  size: '200x100' },
+    { id: 'T6',  name: 'Table 6',  size: '200x100' },
+    { id: 'T8',  name: 'Table 8',  size: '220x100' },
+    { id: 'T21', name: 'Table 21', size: '220x100' },
+  ]
+};
+
+// Positions de places par type de table
+const HONOR_SEATS = ['seat-top-1','seat-top-2','seat-top-3','seat-bot-1','seat-bot-2','seat-bot-3','seat-end-l','seat-end-r'];
+const BRANCH_SEATS = ['seat-l-1','seat-l-2','seat-l-3','seat-r-1','seat-r-2','seat-r-3','seat-end-t','seat-end-b'];
+
+// ============================================================
+// ÉTAT
+// ============================================================
+let state = loadState();
+
+function loadState() {
+  const saved = localStorage.getItem('plan-de-table-v1');
+  if (saved) {
+    try { return JSON.parse(saved); } catch(e) {}
+  }
+  return makeDefaultState();
+}
+
+// Liste des invités par table (pré-remplie)
+const GUESTS_BY_TABLE = {
+  'T1':  ["Greg", "Nico", "Audrey", "Inès", "Joël", "Rocio"],
+  'T2':  ["Sam", "Lise", "Francesca", "Tim", "Christelle", "Alain"],
+  'T3':  ["Brice", "Louis", "Fili", "FloB", "Jérémy", "Maxime"],
+  'T4':  ["Nancy", "Charlotte", "Lucas", "Quentin", "Rox", "Tania B."],
+  'T5':  ["Solène", "Marika", "Jo", "Sébastien", "Elizabeth"],
+  'T6':  ["Zan", "Ju", "Laurent", "Sylvie"],
+  'T8':  ["Grégoire", "Isa", "Susi", "Fredy", "Monique", "Fiou"],
+  'T9':  ["Lucien", "Marie", "Maïté", "Nicolas"],
+  'T10': ["Lise", "Benoît", "Yannick", "Aurore", "Céline", "Albin"],
+  'T11': ["Julien", "Kelly", "Annaël", "Marielle", "Romain", "Léa"],
+  'T12': ["Jade", "Étienne", "Arnaud", "Amandine", "Guillaume", "Bastien"],
+  'T13': ["Arnaud", "Axel", "Loulou", "Emma", "Fanny", "Ilam"],
+  'T14': ["Laetitia", "Arnaud", "Rémi", "Jessica", "Damien", "Antonia"],
+  'T15': ["Holly", "Toby", "Loïc"],
+  'T16': ["Tupp", "Claude", "Nicole", "Jean-Marc", "Roger", "Joëlle"],
+  'T17': ["Giusep", "Diane", "Natasha", "Chris", "Gabi", "Madeline"],
+  'T18': ["Anaïs", "Baptiste", "Vincent", "Malika", "Jean", "Jeanne"],
+  'T19': ["Elisa", "Caro", "Albu", "Tania", "Amandine"],
+  'T20': ["Didier", "Fabienne", "Marco", "Sabine"],
+  'T21': ["Luna", "Léna", "Liana", "Mathis", "Livia", "Théo", "Noé"],
+  'T22': ["Fabienne", "Michel", "Eric", "Annyvonne", "Pierre", "Armel"],
+};
+
+function makeDefaultState() {
+  const s = { tables: {}, top: [], left: [], right: [] };
+  ['top','left','right'].forEach(branch => {
+    DEFAULT_CONFIG[branch].forEach(t => {
+      s[branch].push(t.id);
+      s.tables[t.id] = {
+        id: t.id, name: t.name, size: t.size, branch,
+        seats: {}
+      };
+      const seatPositions = branch === 'top' ? HONOR_SEATS : BRANCH_SEATS;
+      const guests = GUESTS_BY_TABLE[t.id] || [];
+      seatPositions.forEach((pos, i) => {
+        s.tables[t.id].seats[pos] = {
+          name: guests[i] || '',
+          notes: ''
+        };
+      });
+    });
+  });
+  return s;
+}
+
+function saveState() {
+  localStorage.setItem('plan-de-table-v1', JSON.stringify(state));
+}
+
+// ============================================================
+// RENDU
+// ============================================================
+function render() {
+  renderBranch('top', 'top-row');
+  renderBranch('left', 'left-branch');
+  renderBranch('right', 'right-branch');
+  renderStats();
+  renderGuestsList();
+  saveState();
+}
+
+function renderBranch(branch, containerId) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  state[branch].forEach(tableId => {
+    const t = state.tables[tableId];
+    const isHonor = branch === 'top';
+    const div = document.createElement('div');
+    div.className = 'table ' + (isHonor ? 'table-honor' : 'table-branch');
+    div.dataset.tableId = tableId;
+
+    const label = document.createElement('div');
+    label.className = 'table-label';
+    label.textContent = `${t.name} · ${t.size}`;
+    label.onclick = () => openTableModal(tableId);
+    div.appendChild(label);
+
+    const grid = document.createElement('div');
+    grid.className = 'seats-grid';
+    const seats = isHonor ? HONOR_SEATS : BRANCH_SEATS;
+    seats.forEach(pos => {
+      const seat = document.createElement('div');
+      const seatData = t.seats[pos] || { name: '', notes: '' };
+      seat.className = 'seat ' + pos + (seatData.name ? '' : ' empty');
+      seat.textContent = seatData.name || '·';
+      if (seatData.notes) seat.title = seatData.notes;
+      seat.draggable = true;
+      seat.dataset.tableId = tableId;
+      seat.dataset.seatPos = pos;
+      seat.onclick = () => openSeatModal(tableId, pos);
+      addDragHandlers(seat);
+      grid.appendChild(seat);
+    });
+    div.appendChild(grid);
+    container.appendChild(div);
+  });
+}
+
+function renderStats() {
+  let total = 0, occupied = 0;
+  Object.values(state.tables).forEach(t => {
+    Object.values(t.seats).forEach(s => {
+      total++;
+      if (s.name) occupied++;
+    });
+  });
+  document.getElementById('stats').innerHTML =
+    `${occupied} / ${total} places occupées · ${Object.keys(state.tables).length} tables`;
+}
+
+function renderGuestsList() {
+  const grid = document.getElementById('guests-grid');
+  const guests = [];
+  Object.values(state.tables).forEach(t => {
+    Object.entries(t.seats).forEach(([pos, s]) => {
+      if (s.name) guests.push({ name: s.name, table: t.name, notes: s.notes });
+    });
+  });
+  guests.sort((a,b) => a.name.localeCompare(b.name, 'fr'));
+  if (guests.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--ink-soft); font-style:italic; padding:20px;">Aucun invité placé. Cliquez sur une place pour commencer.</div>';
+    return;
+  }
+  grid.innerHTML = guests.map(g =>
+    `<div class="guest-card">${escapeHtml(g.name)}<span class="table-ref">${escapeHtml(g.table)}${g.notes ? ' · '+escapeHtml(g.notes) : ''}</span></div>`
+  ).join('');
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ============================================================
+// DRAG & DROP
+// ============================================================
+let dragSource = null;
+
+function addDragHandlers(el) {
+  el.addEventListener('dragstart', e => {
+    dragSource = { tableId: el.dataset.tableId, seatPos: el.dataset.seatPos };
+    el.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  el.addEventListener('dragend', e => {
+    el.classList.remove('dragging');
+    document.querySelectorAll('.drag-over').forEach(x => x.classList.remove('drag-over'));
+  });
+  el.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    el.classList.add('drag-over');
+  });
+  el.addEventListener('dragleave', e => {
+    el.classList.remove('drag-over');
+  });
+  el.addEventListener('drop', e => {
+    e.preventDefault();
+    el.classList.remove('drag-over');
+    if (!dragSource) return;
+    const target = { tableId: el.dataset.tableId, seatPos: el.dataset.seatPos };
+    const a = state.tables[dragSource.tableId].seats[dragSource.seatPos];
+    const b = state.tables[target.tableId].seats[target.seatPos];
+    state.tables[dragSource.tableId].seats[dragSource.seatPos] = b;
+    state.tables[target.tableId].seats[target.seatPos] = a;
+    dragSource = null;
+    render();
+  });
+}
+
+// ============================================================
+// MODALES
+// ============================================================
+let editingSeat = null;
+function openSeatModal(tableId, seatPos) {
+  editingSeat = { tableId, seatPos };
+  const t = state.tables[tableId];
+  const s = t.seats[seatPos];
+  document.getElementById('modal-title').textContent = 'Place sur ' + t.name;
+  document.getElementById('modal-name').value = s.name || '';
+  document.getElementById('modal-notes').value = s.notes || '';
+  document.getElementById('modal-bg').classList.add('show');
+  setTimeout(() => document.getElementById('modal-name').focus(), 50);
+}
+function closeModal() {
+  document.getElementById('modal-bg').classList.remove('show');
+  editingSeat = null;
+}
+function saveSeat() {
+  if (!editingSeat) return;
+  const name = document.getElementById('modal-name').value.trim();
+  const notes = document.getElementById('modal-notes').value.trim();
+  state.tables[editingSeat.tableId].seats[editingSeat.seatPos] = { name, notes };
+  closeModal();
+  render();
+}
+
+let editingTable = null;
+function openTableModal(tableId) {
+  editingTable = tableId;
+  document.getElementById('modal-table-name').value = state.tables[tableId].name;
+  document.getElementById('modal-table-bg').classList.add('show');
+  setTimeout(() => document.getElementById('modal-table-name').focus(), 50);
+}
+function closeTableModal() {
+  document.getElementById('modal-table-bg').classList.remove('show');
+  editingTable = null;
+}
+function saveTableName() {
+  if (!editingTable) return;
+  const name = document.getElementById('modal-table-name').value.trim();
+  if (name) state.tables[editingTable].name = name;
+  closeTableModal();
+  render();
+}
+
+// Enter pour valider modales
+document.getElementById('modal-name').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveSeat(); }
+  if (e.key === 'Escape') closeModal();
+});
+document.getElementById('modal-table-name').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); saveTableName(); }
+  if (e.key === 'Escape') closeTableModal();
+});
+
+// ============================================================
+// IMPORT / EXPORT
+// ============================================================
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'plan-de-table.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.tables || !data.top || !data.left || !data.right) {
+        alert('Fichier JSON invalide.');
+        return;
+      }
+      state = data;
+      render();
+    } catch(err) {
+      alert('Erreur de lecture du fichier : ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function exportCSV() {
+  const rows = [['Table','Position','Invité','Notes']];
+  Object.values(state.tables).forEach(t => {
+    Object.entries(t.seats).forEach(([pos, s]) => {
+      if (s.name) rows.push([t.name, pos, s.name, s.notes || '']);
+    });
+  });
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'plan-de-table.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function resetAll() {
+  if (!confirm('Effacer toutes les données et revenir à la configuration par défaut ?')) return;
+  localStorage.removeItem('plan-de-table-v1');
+  state = makeDefaultState();
+  render();
+}
+
+// ============================================================
+// LANCEMENT
+// ============================================================
+render();
+</script>
+
+</body>
+</html>
